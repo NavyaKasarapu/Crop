@@ -1,0 +1,39 @@
+.home-nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.home-nav-actions button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: #245c32;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 12px;
+}
+
+.home-nav-actions button:hover {
+  background: #e8f4e8;
+  border-color: #d2e6d3;
+}
+
+@media (max-width: 850px) {
+  .navbar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .home-nav-actions {
+    order: 3;
+    width: 100%;
+  }
+
+  .home-nav-actions button {
+    flex: 1;
+  }
+}

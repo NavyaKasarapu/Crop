@@ -1,0 +1,85 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# =========================
+# Virtual environments
+# =========================
+.venv/
+venv/
+env/
+backend/venv/
+frontend/venv/
+
+# =========================
+# Environment / secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Audio / generated files
+# =========================
+*.wav
+*.mp3
+
+# =========================
+# Datasets
+# =========================
+PlantVillage-Dataset/
+llrl_dataset.zip
+llrl_severity_test/
+llrl_temp/
+
+# =========================
+# Training outputs
+# =========================
+training_results/
+
+# =========================
+# Node
+# =========================
+node_modules/
+frontend/node_modules/
+
+# =========================
+# Build output
+# =========================
+dist/
+build/
+frontend/dist/
+frontend/build/
+
+# =========================
+# OS
+# =========================
+Thumbs.db
+.DS_Store
+
+# Unused / large training models
+backend/model/crop_disease_vit.pth
+backend/model/crop_disease_mobilenetv3_backup.pth
+backend/severity_model/best_LGR-Net.pth
+backend/severity_model/ResNet18-model-new.pth
+
+# Backup source files
+backend/app/services/model_service_backup.py
+backend/training/train_backup.py
+frontend/src/pages/Result.jsx.backup

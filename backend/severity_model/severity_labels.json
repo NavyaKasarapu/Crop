@@ -1,0 +1,26 @@
+{
+  "0": {
+    "label": "Normal",
+    "severity_code": 0
+  },
+  "1": {
+    "label": "Severity Level 1",
+    "severity_code": 1
+  },
+  "3": {
+    "label": "Severity Level 3",
+    "severity_code": 3
+  },
+  "5": {
+    "label": "Severity Level 5",
+    "severity_code": 5
+  },
+  "7": {
+    "label": "Severity Level 7",
+    "severity_code": 7
+  },
+  "9": {
+    "label": "Severity Level 9",
+    "severity_code": 9
+  }
+}

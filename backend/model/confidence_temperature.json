@@ -1,0 +1,6 @@
+{
+    "temperature": 1.0714941024780273,
+    "method": "temperature_scaling",
+    "validation_samples": 8129,
+    "number_of_classes": 38
+}
