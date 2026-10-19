@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getSupportedCrops } from "../services/api";
 import "./Home.css";
 
 const STORAGE_KEY = "cropDiseaseAnalyses";
@@ -7,6 +8,9 @@ const STORAGE_KEY = "cropDiseaseAnalyses";
 function Home() {
   const navigate = useNavigate();
   const [recentAnalyses, setRecentAnalyses] = useState([]);
+  const [supportedCrops, setSupportedCrops] = useState([]);
+  const [cropsLoading, setCropsLoading] = useState(true);
+  const [cropsError, setCropsError] = useState(null);
 
   useEffect(() => {
     try {
@@ -17,6 +21,38 @@ function Home() {
     } catch {
       setRecentAnalyses([]);
     }
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCrops() {
+      try {
+        setCropsLoading(true);
+        const res = await getSupportedCrops();
+        if (isMounted) {
+          if (res && res.crops && Array.isArray(res.crops)) {
+            setSupportedCrops(res.crops);
+            setCropsError(null);
+          } else {
+            setSupportedCrops([]);
+            setCropsError("Supported crop list is currently unavailable.");
+          }
+        }
+      } catch (err) {
+        if (isMounted) {
+          setSupportedCrops([]);
+          setCropsError(err.message || "Supported crop list is currently unavailable.");
+        }
+      } finally {
+        if (isMounted) {
+          setCropsLoading(false);
+        }
+      }
+    }
+    loadCrops();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const openRecent = (item) => {
@@ -243,6 +279,49 @@ function Home() {
               <p>Receive disease identification, severity estimate, care tips, weather context, and speech guidance.</p>
             </div>
           </div>
+        </section>
+
+        {/* SUPPORTED CROPS SECTION */}
+        <section className="supported-crops-section" id="supported-crops">
+          <div className="section-heading">
+            <span>Model Scope</span>
+            <h2>Supported Crops</h2>
+            <p>
+              The AI model is trained and calibrated exclusively for the following {supportedCrops.length > 0 ? supportedCrops.length : 14} crop species.
+            </p>
+          </div>
+
+          {cropsLoading ? (
+            <div style={{ textAlign: "center", padding: "36px", color: "#666" }}>
+              <span style={{ fontSize: "1.1rem" }}>🌱 Loading supported crops from trained model metadata...</span>
+            </div>
+          ) : cropsError || supportedCrops.length === 0 ? (
+            <div style={{
+              background: "#fff7ed",
+              border: "1px solid #fed7aa",
+              borderRadius: "12px",
+              padding: "24px",
+              textAlign: "center",
+              maxWidth: "600px",
+              margin: "20px auto 0",
+              color: "#9a3412"
+            }}>
+              <span style={{ fontSize: "32px", display: "block", marginBottom: "8px" }}>⚠️</span>
+              <strong style={{ fontSize: "1.05rem", display: "block" }}>Supported crop list is currently unavailable</strong>
+              <p style={{ margin: "8px 0 0 0", fontSize: "0.9rem", color: "#7c2d12" }}>
+                Unable to load verified crop labels from the AI model service. Please verify the backend is running.
+              </p>
+            </div>
+          ) : (
+            <div className="supported-crops-grid">
+              {supportedCrops.map((crop) => (
+                <div key={crop.name} className="supported-crop-card">
+                  <span className="supported-crop-icon">{crop.icon || "🌱"}</span>
+                  <span className="supported-crop-name">{crop.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="disclaimer">

@@ -55,6 +55,13 @@ export async function getModelClasses() {
   return await handleResponse(response, "Failed to load model classes");
 }
 
+export async function getSupportedCrops() {
+  const response = await fetch(`${API_BASE_URL}/api/supported-crops`, {
+    method: "GET",
+  });
+  return await handleResponse(response, "Failed to load supported crops");
+}
+
 export async function predictCropDisease(file) {
   const formData = new FormData();
   formData.append("file", file);

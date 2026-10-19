@@ -37,3 +37,88 @@
     flex: 1;
   }
 }
+
+/* =========================================================
+   SUPPORTED CROPS SECTION STYLES
+   ========================================================= */
+
+.supported-crops-section {
+  max-width: 1180px;
+  margin: 48px auto 0;
+  padding: 0 28px;
+}
+
+.supported-crops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.supported-crop-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  text-align: center;
+  user-select: none;
+}
+
+.supported-crop-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(46, 125, 50, 0.1);
+  border-color: #86efac;
+}
+
+.supported-crop-icon {
+  font-size: 2.3rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.supported-crop-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+@media (max-width: 680px) {
+  .supported-crops-section {
+    padding: 0 16px;
+    margin-top: 32px;
+  }
+
+  .supported-crops-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .supported-crop-card {
+    padding: 14px 8px 10px;
+    gap: 6px;
+  }
+
+  .supported-crop-icon {
+    font-size: 1.8rem;
+  }
+
+  .supported-crop-name {
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .supported-crops-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -211,6 +211,53 @@ VITE_API_BASE_URL=http://127.0.0.1:8000
 
 ---
 
+## 🌿 Real-World Fine-Tuning with PlantDoc
+
+The model has been fine-tuned on real field photographs using the [PlantDoc dataset](https://github.com/pratikkayal/PlantDoc-Dataset) (CC BY 4.0) to improve robustness beyond clean lab images.
+
+### Dataset
+| Source | Images | Type |
+|---|---|---|
+| PlantVillage (80 images/class, 38 classes) | 3,040 | Clean lab photos |
+| PlantDoc train | 2,341 | Real-world field photos |
+| **Combined train total** | **5,381** | Mixed |
+| PlantDoc test (held-out evaluation) | 236 | Real-world field photos |
+
+### Fine-Tuning Setup
+```powershell
+.\backend\venv\Scripts\python.exe backend\training\train_realworld.py
+```
+- Architecture: MobileNetV3-Small (transfer learning, backbone LR 5e-5, head LR 2e-4)
+- Label smoothing: 0.08
+- Augmentations: random horizontal/vertical flip, rotation ±30°, color jitter, random erasing
+
+### Evaluation Results
+
+#### PlantVillage Test Set (clean lab images)
+| Metric | Score |
+|---|---|
+| Accuracy | 97.85% |
+| Macro Precision | 97.70% |
+| Macro Recall | 97.08% |
+| Macro F1 | 97.29% |
+
+#### PlantDoc Test Set (real-world field images, out-of-domain)
+| Model | Top-1 Accuracy on PlantDoc |
+|---|---|
+| Baseline (PlantVillage only) | 10.4% |
+| Fine-tuned (PlantDoc + PlantVillage) | **32.08%** |
+
+> **Important limitation:** PlantDoc accuracy of 32% reflects genuine difficulty — PlantDoc images are noisier, contain more backgrounds and complex lighting, and the 27 PlantDoc classes only partially overlap with the 38 PlantVillage classes. This is real, verified accuracy from a held-out test set.
+
+### Temperature Calibration
+After fine-tuning, the confidence temperature was recalibrated against the PlantVillage validation set:
+```powershell
+.\backend\venv\Scripts\python.exe backend\training\calibrate_confidence.py
+```
+- **Calibrated temperature:** 0.704 (written to `backend/model/confidence_temperature.json`)
+
+---
+
 ## 📡 API Documentation
 
 | Method | Endpoint | Description |
@@ -229,44 +276,42 @@ VITE_API_BASE_URL=http://127.0.0.1:8000
   "success": true,
   "filename": "grape.png",
   "result": {
+    "status_category": "supported_diseased",
+    "status_label": "Supported crop — disease detected",
     "crop": "Grape",
     "condition": "Disease Detected",
     "disease": "Black rot",
     "confidence": 100.0,
+    "confidence_explanation": "Confidence reflects class probability among trained classes only. It is not a measure of disease severity or real-world reliability.",
+    "quality_warning": null,
     "probability_gap": 100.0,
     "reliability": "High",
     "reliability_message": "The model strongly favors this class based on leaf pattern matching.",
     "health_status": "Disease Detected",
-    "unsupported": false
+    "unsupported": false,
+    "predicted_class": "Grape___Black_rot",
+    "diagnostic_metrics": {
+      "brightness": 112.3,
+      "stddev": 41.7,
+      "blur_var": 320.5,
+      "foliage_ratio": 0.62,
+      "energy_score": 10.2,
+      "max_logit": 10.2,
+      "entropy": 0.001
+    }
   },
-  "severity": {
-    "severity": "Medium",
-    "affected_area": "14.9%",
-    "health_score": 85,
-    "method": "Estimated (Computer Vision Leaf Area Analysis)",
-    "is_estimated": true
-  },
-  "disease_info": {
-    "available": true,
-    "disease_name": "Black rot",
-    "crop_name": "Grape",
-    "symptoms": [
-      "Small circular spots appear on leaves with dark borders.",
-      "Infected leaves may become distorted or dry up."
-    ],
-    "causes": "Fungal disease caused by Guignardia bidwellii.",
-    "recommendations": [
-      "Prune out mummified fruits and dead twigs during dormant season.",
-      "Apply recommended bio-fungicides or captan/mancozeb during early shoot development.",
-      "Improve drainage and avoid overhead irrigation."
-    ],
-    "prevention": [
-      "Prune vines to maximize air circulation and sunlight penetration.",
-      "Remove mummified berries from the vineyard floor."
-    ]
-  }
+  "severity": { ... },
+  "disease_info": { ... }
 }
 ```
+
+### `status_category` Values
+| Value | Meaning |
+|---|---|
+| `supported_diseased` | Supported crop leaf — disease detected |
+| `supported_healthy` | Supported crop leaf — healthy |
+| `unknown` | Image quality insufficient (blurry, too dark/bright, ambiguous) |
+| `unsupported` | Not a supported crop leaf (unrelated object, unsupported species) |
 
 ---
 
@@ -286,6 +331,39 @@ The application strictly separates **Classification Confidence** from **Disease 
 
 ---
 
+## ⚠️ Model Limitations
+
+- **Supported crops only:** The model was trained on 14 crop species (38 disease/healthy classes). Images of unsupported crops, animals, soil, or other objects are rejected via the OOD detection pipeline — they are **not** forced into a disease class.
+- **OOD detection mechanism:** Multi-stage gating: botanical foliage ratio (< 8% green → unsupported), free energy score (< 4.8 → unsupported), max logit (< 4.0), Shannon entropy, plus confidence and gap thresholds. No single softmax threshold alone is used.
+- **Blur rejection threshold:** Calibrated on 100 PlantDoc field images. Hard reject: `blur_var < 8` (below 1st percentile of real field photos). Advisory warning: `blur_var < 50` (below 10th percentile).
+- **PlantDoc accuracy (32%):** This is a real measured value, not estimated. The domain gap between PlantVillage lab images and field photographs is large. Do not rely on this system for mission-critical agricultural decisions without independent validation.
+- **Camera capture:** Works on HTTPS or localhost contexts only (browser security requirement). On non-secure HTTP production deployments, camera access will be denied.
+- **Affected area is estimated:** The lesion area percentage is computed from color segmentation and is an approximation — not a clinical measurement.
+
+---
+
+## 🧪 Running Tests
+
+### Backend Endpoint Tests
+```powershell
+.\backend\venv\Scripts\python.exe -u backend\test_endpoints.py
+```
+Tests: health check, class listing, weather, translation, TTS, valid leaf image prediction (all 9 tests pass).
+
+### OOD Rejection Tests
+```powershell
+.\backend\venv\Scripts\python.exe -u scripts\test_ood_rejection.py
+```
+Tests: pure blue (unsupported), random noise (unsupported), wood texture (unknown/blur), geometric object (unsupported), sharp leaf (diseased), mild/severe blur (unknown), overexposed (diseased), underexposed (unsupported).
+
+### Real-World Evaluation
+```powershell
+.\backend\venv\Scripts\python.exe -u scripts\evaluate_realworld_and_ood.py
+```
+Evaluates model on all 236 PlantDoc test images.
+
+---
+
 ## 🛠️ Troubleshooting
 
 1. **AI Model Unavailable (503 Error):**
@@ -296,7 +374,11 @@ The application strictly separates **Classification Confidence** from **Disease 
    - Ensure the FastAPI server is running on port 8000: `http://127.0.0.1:8000`.
    - Check `frontend/.env` has `VITE_API_BASE_URL=http://127.0.0.1:8000`.
 
-3. **Piper Voice Generation Notice:**
+3. **Camera not working:**
+   - Camera access requires HTTPS or localhost. On HTTP, the browser will block `getUserMedia`.
+   - Check browser permission — deny once = deny permanently until reset in browser settings.
+
+4. **Piper Voice Generation Notice:**
    - Voice models for `en`, `hi`, and `te` are stored in `backend/voices/`. Ensure files are not moved or renamed.
 
 ---

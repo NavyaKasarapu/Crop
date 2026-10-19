@@ -93,6 +93,25 @@ def get_model_classes():
 
 
 # ---------------------------------------------------------
+# GET /api/supported-crops
+# ---------------------------------------------------------
+@router.get("/supported-crops")
+def get_supported_crops():
+    if not model_service.is_available or not model_service.class_names:
+        raise HTTPException(
+            status_code=503,
+            detail=model_service.unavailable_reason or "AI model labels are currently unavailable."
+        )
+    crops = model_service.get_supported_crops()
+    return {
+        "success": True,
+        "crops": crops,
+        "count": len(crops),
+        "total_classes": len(model_service.class_names),
+    }
+
+
+# ---------------------------------------------------------
 # GET /api/weather
 # ---------------------------------------------------------
 @router.get("/weather")
@@ -183,7 +202,7 @@ async def predict(file: UploadFile = File(...)):
 
     # 5. Model Inference
     try:
-        prediction_result = model_service.predict(image)
+        prediction_result = model_service.predict(image, filename=file.filename)
     except Exception as error:
         raise HTTPException(
             status_code=500,
@@ -194,16 +213,23 @@ async def predict(file: UploadFile = File(...)):
     predicted_disease = prediction_result.get("disease", "Unknown")
     condition = prediction_result.get("condition", "Unknown")
     is_unsupported = prediction_result.get("unsupported", False)
+    status_category = prediction_result.get("status_category", "unsupported" if is_unsupported else "supported_diseased")
+    status_label = prediction_result.get("status_label", "Supported crop — disease detected")
+    predicted_class = prediction_result.get("predicted_class")
 
-    # 6. Severity & Affected Area Estimation (Independent of confidence)
-    if is_unsupported or condition in ("Unsupported", "Unknown"):
+    is_uncertain = (status_category == "uncertain") or (condition == "Unable to identify confidently")
+    is_unknown_img = (status_category == "unknown") or (condition == "Unknown")
+    is_unsupported_crop = (status_category == "unsupported") or is_unsupported or (condition == "Unsupported")
+
+    # 6. Severity & Affected Area Estimation (Only reliable for confident diagnoses)
+    if is_unsupported_crop or is_unknown_img or is_uncertain:
         severity_result = {
             "severity": "N/A",
             "affected_area": "N/A",
             "health_score": None,
             "method": "N/A",
             "is_estimated": False,
-            "details": "Severity analysis is only applicable to supported crop leaves."
+            "details": "Severity analysis is only applicable to confident diagnoses on supported crop leaves."
         }
     else:
         try:
@@ -219,10 +245,9 @@ async def predict(file: UploadFile = File(...)):
                 "details": "Severity analysis unavailable."
             }
 
-    # 7. Disease Knowledge Retrieval
+    # 7. Disease Knowledge & Recommendation Retrieval
     knowledge = None
-    predicted_class = prediction_result.get("predicted_class")
-    if not is_unsupported and condition not in ("Unsupported", "Unknown"):
+    if not is_unsupported_crop and not is_unknown_img and not is_uncertain and condition != "Healthy":
         knowledge = get_disease_information(predicted_crop, predicted_disease, predicted_class)
 
     if knowledge:
@@ -235,73 +260,115 @@ async def predict(file: UploadFile = File(...)):
             "recommendations": knowledge.get("recommendations", []),
             "prevention": knowledge.get("prevention", []),
         }
+    elif condition == "Healthy":
+        disease_info = {
+            "available": True,
+            "disease_name": "Healthy",
+            "crop_name": predicted_crop,
+            "symptoms": ["Normal healthy leaf coloration, vein structure, and cellular foliage observed."],
+            "causes": "Plant foliage exhibits normal healthy cellular structure with no active pathogen colonization.",
+            "recommendations": [
+                "Maintain current irrigation, nutrient, and fertilizing regimen.",
+                "Continue regular field scouting for early pest or disease pressure.",
+            ],
+            "prevention": [
+                "Maintain good field sanitation, air circulation, and crop rotation.",
+                "Ensure adequate drainage and avoid prolonged foliage dampness.",
+            ],
+        }
+    elif is_uncertain:
+        disease_info = {
+            "available": False,
+            "disease_name": "Unable to identify confidently",
+            "crop_name": predicted_crop,
+            "symptoms": ["Visual leaf symptoms are faint, ambiguous, or do not match a single pathogen profile with high certainty."],
+            "causes": f"The leaf visual pattern matches {predicted_crop}, but specific foliar disease patterns lack definitive statistical confidence.",
+            "recommendations": [
+                f"The leaf appears to belong to {predicted_crop}, but the specific disease cannot be confirmed with sufficient confidence.",
+                "Do not apply disease-specific chemical treatments or fungicides without on-site confirmation by an agronomist.",
+                "Inspect multiple leaves across the crop canopy to check if clearer, characteristic lesions are present.",
+            ],
+            "prevention": [
+                "Take a closer, high-resolution photograph of distinct lesion borders in natural daylight.",
+                "Re-examine the plant in 48-72 hours if foliar symptoms progress.",
+            ],
+            "reason": "Supported crop identified, but disease is uncertain.",
+        }
+    elif is_unknown_img:
+        disease_info = {
+            "available": False,
+            "disease_name": "N/A",
+            "crop_name": "Unknown",
+            "symptoms": ["Unable to resolve foliar details due to image blur, low light, or contrast issues."],
+            "causes": "The image quality does not provide sufficient resolution or lighting for a definitive diagnosis.",
+            "recommendations": [
+                "Capture a sharper, close-up photograph of a single leaf in bright natural daylight.",
+                "Ensure the camera lens is focused directly on the leaf surface and symptoms fill the frame.",
+                "Hold the camera steady or place a hand behind the leaf if moving in the wind.",
+            ],
+            "prevention": [
+                "Avoid blurry, underexposed, or overexposed captures.",
+            ],
+            "reason": "Image quality or clarity issue.",
+        }
+    elif is_unsupported_crop:
+        disease_info = {
+            "available": False,
+            "disease_name": "N/A",
+            "crop_name": predicted_crop,
+            "symptoms": ["The visual pattern does not match any of the 14 supported crop species."],
+            "causes": "The photograph is either not a crop leaf, or the plant species is outside the 14 supported crops.",
+            "recommendations": [
+                "This AI system is trained exclusively on 14 crops: Apple, Blueberry, Cherry, Corn, Grape, Orange, Peach, Bell Pepper, Potato, Raspberry, Soybean, Squash, Strawberry, and Tomato.",
+                "Unsupported crops (e.g. rice, wheat, mango, banana, rose, weeds) cannot be reliably diagnosed by this model and must not be forced into a supported class.",
+                "Consult your local agricultural extension service or a crop-specific pathology manual for unsupported crops.",
+            ],
+            "prevention": [
+                "Check the Supported Crops list at the bottom of the Home page before uploading.",
+            ],
+            "reason": "Crop species or image is unsupported.",
+        }
     else:
-        if condition == "Healthy":
-            disease_info = {
-                "available": True,
-                "disease_name": "Healthy",
-                "crop_name": predicted_crop,
-                "symptoms": ["No disease symptoms visible on foliage."],
-                "causes": "Plant foliage exhibits normal healthy coloration and cell structure.",
-                "recommendations": [
-                    "Maintain current irrigation and fertilizing regimen.",
-                    "Continue regular scouting for early pest or disease pressure.",
-                ],
-                "prevention": [
-                    "Maintain good field sanitation and crop rotation.",
-                    "Ensure adequate air circulation and drainage.",
-                ],
-            }
-        elif is_unsupported or condition in ("Unsupported", "Unknown"):
-            disease_info = {
-                "available": False,
-                "disease_name": "Unsupported Image / Crop",
-                "crop_name": "Unsupported Image / Crop",
-                "symptoms": ["Image does not match any of the 14 supported crops."],
-                "causes": "The uploaded photo is either not a crop leaf, or the plant species is outside the 14 supported crops.",
-                "recommendations": [
-                    "Upload a clear, focused photo of a leaf from one of the 14 supported crops.",
-                    "Ensure adequate lighting and make sure the leaf fills the majority of the image frame.",
-                    "Supported crops: Apple, Blueberry, Cherry, Corn, Grape, Orange, Peach, Bell Pepper, Potato, Raspberry, Soybean, Squash, Strawberry, and Tomato.",
-                ],
-                "prevention": [
-                    "Photograph individual leaves against a neutral, high-contrast background for highest accuracy.",
-                ],
-                "reason": "Image not supported by dataset.",
-            }
-        else:
-            disease_info = {
-                "available": False,
-                "disease_name": predicted_disease,
-                "crop_name": predicted_crop,
-                "symptoms": [],
-                "causes": f"Disease pattern identified as {predicted_disease}.",
-                "recommendations": [
-                    "Isolate symptomatic plants to prevent potential spread.",
-                    "Consult local agricultural extension service for specialized fungicide guidance.",
-                ],
-                "prevention": [
-                    "Sanitize pruning tools between cuts.",
-                    "Avoid overhead irrigation to minimize leaf moisture duration.",
-                ],
-                "reason": "General guidance applied.",
-            }
+        disease_info = {
+            "available": False,
+            "disease_name": predicted_disease,
+            "crop_name": predicted_crop,
+            "symptoms": [],
+            "causes": f"Disease pattern identified as {predicted_disease}.",
+            "recommendations": [
+                "Isolate symptomatic plants to prevent potential spread.",
+                "Consult local agricultural extension service for specialized fungicide guidance.",
+            ],
+            "prevention": [
+                "Sanitize pruning tools between cuts.",
+                "Avoid overhead irrigation to minimize leaf moisture duration.",
+            ],
+            "reason": "General guidance applied.",
+        }
 
     # 8. Complete unified response
     return {
         "success": True,
         "filename": file.filename,
         "result": {
+            "status_category": status_category,
+            "status_label": status_label,
             "crop": predicted_crop,
             "condition": condition,
             "disease": predicted_disease,
             "confidence": prediction_result.get("confidence", 0.0),
+            "confidence_explanation": prediction_result.get(
+                "confidence_explanation",
+                model_service.CONFIDENCE_LIMITATION_EXPLANATION
+            ),
+            "quality_warning": prediction_result.get("quality_warning"),
             "probability_gap": prediction_result.get("probability_gap", 0.0),
             "reliability": prediction_result.get("reliability", "Low"),
             "reliability_message": prediction_result.get("reliability_message", ""),
             "health_status": prediction_result.get("health_status", "Unable to determine"),
             "unsupported": is_unsupported,
             "predicted_class": prediction_result.get("predicted_class"),
+            "diagnostic_metrics": prediction_result.get("diagnostic_metrics", {}),
         },
         "severity": severity_result,
         "disease_info": disease_info,

@@ -61,6 +61,21 @@ const UI_TEXT = {
     notAvailableModel: "Not available with current model",
     none: "None",
     healthy: "Healthy",
+    qualityWarning: "Image Quality Notice",
+    blurTitle: "Unclear or Ambiguous Image",
+    blurDesc: "The image quality or content was not sufficient for a reliable crop disease prediction.",
+    blurGuidance1: "Retake the photo in better lighting, holding the camera steady.",
+    blurGuidance2: "Ensure the leaf fills most of the frame and is in sharp focus.",
+    uncertainTitle: "Diagnosis Uncertain",
+    uncertainDesc: "The crop appears to belong to a supported variety, but specific foliar disease symptoms cannot be confirmed with sufficient confidence.",
+    uncertainGuidance1: "Do not apply chemical sprays or fungicides without positive field diagnosis by an agronomist.",
+    uncertainGuidance2: "Inspect multiple leaves across the plant canopy to check if clearer, characteristic lesions are present.",
+    uncertainGuidance3: "Capture a closer, high-resolution photo of distinct lesion borders in bright natural daylight.",
+    unableToConfidentlyIdentify: "Unable to identify confidently",
+    confidenceDisclaimer: "Confidence disclaimer",
+    diagnosticDetails: "Diagnostic Details",
+    showDetails: "▸ Show diagnostic details",
+    hideDetails: "▾ Hide diagnostic details",
   },
   hi: {
     title: "रोग निदान मूल्यांकन",
@@ -117,6 +132,21 @@ const UI_TEXT = {
     notAvailableModel: "वर्तमान मॉडल के साथ उपलब्ध नहीं",
     none: "कोई नहीं",
     healthy: "स्वस्थ",
+    qualityWarning: "छवि गुणवत्ता सूचना",
+    blurTitle: "अस्पष्ट या संदिग्ध छवि",
+    blurDesc: "छवि की गुणवत्ता या सामग्री विश्वसनीय रोग पहचान के लिए पर्याप्त नहीं थी।",
+    blurGuidance1: "बेहतर रोशनी में, कैमरा स्थिर रखकर दोबारा फोटो लें।",
+    blurGuidance2: "सुनिश्चित करें कि पत्ती फ्रेम के अधिकांश हिस्से को भरे और तेज फोकस में हो।",
+    uncertainTitle: "निदान अनिश्चित",
+    uncertainDesc: "फसल समर्थित किस्म की प्रतीत होती है, लेकिन विशिष्ट रोग लक्षणों की पुष्टि पर्याप्त विश्वास के साथ नहीं की जा सकती।",
+    uncertainGuidance1: "कृषि विशेषज्ञ की पुष्टि के बिना कोई विशिष्ट रासायनिक छिड़काव न करें।",
+    uncertainGuidance2: "स्पष्ट लक्षणों के लिए पौधे की अन्य पत्तियों की जांच करें।",
+    uncertainGuidance3: "प्राकृतिक रोशनी में रोगग्रस्त हिस्से की नज़दीकी और स्पष्ट तस्वीर लें।",
+    unableToConfidentlyIdentify: "विश्वास के साथ पहचान नहीं की जा सकी",
+    confidenceDisclaimer: "सटीकता संबंधी अस्वीकरण",
+    diagnosticDetails: "नैदानिक विवरण",
+    showDetails: "▸ नैदानिक विवरण दिखाएं",
+    hideDetails: "▾ नैदानिक विवरण छुपाएं",
   },
   te: {
     title: "వ్యాధి నిర్ధారణ నివేదిక",
@@ -173,6 +203,21 @@ const UI_TEXT = {
     notAvailableModel: "ప్రస్తుత మోడల్‌తో అందుబాటులో లేదు",
     none: "లేదు",
     healthy: "ఆరోగ్యంగా ఉంది",
+    qualityWarning: "చిత్రం నాణ్యత సూచన",
+    blurTitle: "అస్పష్టమైన లేదా సందిగ్ధమైన చిత్రం",
+    blurDesc: "చిత్రం నాణ్యత లేదా కంటెంట్ విశ్వసనీయమైన వ్యాధి అంచనాకు సరిపోలేదు.",
+    blurGuidance1: "మెరుగైన కాంతిలో, కెమెరాను స్థిరంగా పట్టుకుని మళ్ళీ ఫోటో తీయండి.",
+    blurGuidance2: "ఆకు ఫ్రేమ్‌లో చాలా భాగం నింపేలా మరియు స్పష్టంగా ఫోకస్‌లో ఉండేలా చూసుకోండి.",
+    uncertainTitle: "నిర్ధారణ అనిశ్చితం",
+    uncertainDesc: "పంట మద్దతు ఉన్న రకమే అయినప్పటికీ, నిర్దిష్ట వ్యాధి లక్షణాలను తగినంత ఖచ్చితత్వంతో ధృవీకరించలేకపోయాము.",
+    uncertainGuidance1: "వ్యవసాయ నిపుణుల సలహా లేకుండా నిర్దిష్ట రసాయన మందులను పిచికారీ చేయవద్దు.",
+    uncertainGuidance2: "స్పష్టమైన లక్షణాల కోసం అదే మొక్కలోని ఇతర ఆకులను పరిశీలించండి.",
+    uncertainGuidance3: "సహజ వెలుతురులో వ్యాధి సోకిన భాగాన్ని దగ్గరగా స్పష్టంగా ఫోటో తీయండి.",
+    unableToConfidentlyIdentify: "ఖచ్చితంగా గుర్తించలేకపోయాము",
+    confidenceDisclaimer: "ఖచ్చితత్వ నిరాకరణ",
+    diagnosticDetails: "నిర్ధారణ వివరాలు",
+    showDetails: "▸ నిర్ధారణ వివరాలు చూపించు",
+    hideDetails: "▾ నిర్ధారణ వివరాలు దాచు",
   }
 };
 
@@ -185,6 +230,12 @@ function Result() {
   const prediction = location.state?.prediction;
   const rawSeverity = location.state?.severity;
   const rawDiseaseInfo = location.state?.disease_info;
+
+  // New structured fields from updated API
+  const statusCategory = prediction?.status_category || (prediction?.unsupported ? "unsupported" : null);
+  const qualityWarning = prediction?.quality_warning || null;
+  const confidenceExplanation = prediction?.confidence_explanation || null;
+  const diagnosticMetrics = prediction?.diagnostic_metrics || null;
 
   // Multilingual UI state
   const [selectedLanguage, setSelectedLanguage] = useState("en");
@@ -344,9 +395,18 @@ function Result() {
    * 4. SPEECH SYNTHESIS & FULL NARRATION
    */
   const buildSpeechText = (scope, lang) => {
+    const isUncertain =
+      statusCategory === "uncertain" ||
+      prediction?.condition === "Unable to identify confidently";
+    const isBlurry =
+      statusCategory === "unknown" ||
+      prediction?.condition === "Unknown";
     const isUnsupported =
+      statusCategory === "unsupported" ||
       prediction?.unsupported ||
       prediction?.condition === "Unsupported" ||
+      prediction?.crop === "Unsupported crop" ||
+      prediction?.crop === "Unknown image" ||
       prediction?.crop === "Unsupported Image / Crop";
     const isHealthy = prediction?.condition === "Healthy";
     const conf = prediction?.confidence ? Math.round(prediction.confidence) : 0;
@@ -359,6 +419,26 @@ function Result() {
         return "फसल विश्लेषण परिणाम: असमर्थित छवि या फसल। यह चित्र 14 समर्थित फसलों में से किसी से मेल नहीं खाता। कृपया अच्छी रोशनी में फसल की पत्ती की स्पष्ट तस्वीर अपलोड करें।";
       }
       return "Crop diagnosis: Unsupported image or crop. The uploaded image does not match any of the 14 supported crop leaf classes. Please upload a clear photo of a crop leaf in good lighting.";
+    }
+
+    if (isBlurry) {
+      if (lang === "te") {
+        return "పంట విశ్లేషణ ఫలితం: అస్పష్టమైన చిత్రం. నమ్మకమైన వ్యాధి గుర్తింపు కోసం కాంతిలో స్థిరంగా ఫోకస్ చేసి మళ్ళీ ఫోటో తీయండి.";
+      }
+      if (lang === "hi") {
+        return "फसल विश्लेषण परिणाम: अस्पष्ट छवि। विश्वसनीय निदान के लिए कृपया अच्छी रोशनी में स्थिर कैमरे से दोबारा फोटो लें।";
+      }
+      return "Crop diagnosis: Unclear photo. Please retake a sharp, well-lit photograph holding the camera steady.";
+    }
+
+    if (isUncertain) {
+      if (lang === "te") {
+        return `పంట విశ్లేషణ ఫలితం: పంట ${displayCrop}గా గుర్తించబడింది, కానీ నిర్దిష్ట వ్యాధి లక్షణాలు తగినంత ఖచ్చితత్వంతో నిర్ధారించబడలేదు. నిర్దిష్ట రసాయన మందులను వాడకుండా వ్యవసాయ నిపుణుడిని సంప్రదించండి.`;
+      }
+      if (lang === "hi") {
+        return `फसल विश्लेषण परिणाम: फसल की पहचान ${displayCrop} के रूप में हुई है, लेकिन बीमारी के लक्षण निश्चित रूप से स्पष्ट नहीं हैं। कृपया विशेषज्ञ की सलाह के बिना रासायनिक उपचार न करें।`;
+      }
+      return `Crop diagnosis: The leaf appears to be ${displayCrop}, but specific disease symptoms cannot be confirmed with sufficient confidence. Do not apply chemical treatments without agronomic confirmation.`;
     }
 
     if (lang === "te") {
@@ -779,8 +859,11 @@ function Result() {
     );
   }
 
-  const isHealthy = prediction.condition === "Healthy";
-  const isUnknown = prediction.condition === "Unknown" || prediction.unsupported;
+  const isHealthy = statusCategory === "supported_healthy" || prediction.condition === "Healthy";
+  const isBlurry  = statusCategory === "unknown" || prediction.condition === "Unknown";
+  const isUnsupported = statusCategory === "unsupported" || prediction.unsupported || prediction.condition === "Unsupported";
+  const isUncertain = statusCategory === "uncertain" || prediction.condition === "Unable to identify confidently";
+  const isUnknown = isBlurry || isUnsupported || isUncertain;      // suppresses disease treatment cards
   const isDiseased = !isHealthy && !isUnknown;
 
   return (
@@ -833,6 +916,34 @@ function Result() {
           </div>
         )}
 
+        {/* QUALITY WARNING BANNER (non-blocking advisory) */}
+        {qualityWarning && (
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "10px", padding: "12px 16px", marginBottom: "12px" }}>
+            <span style={{ fontSize: "20px", lineHeight: 1 }}>⚠️</span>
+            <div>
+              <strong style={{ color: "#92400e", display: "block", marginBottom: "2px", fontSize: "0.9rem" }}>{t("qualityWarning")}</strong>
+              <span style={{ color: "#78350f", fontSize: "0.85rem" }}>{qualityWarning}</span>
+            </div>
+          </div>
+        )}
+
+        {/* STATUS LABEL BANNER (from status_category) */}
+        {prediction?.status_label && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: "10px",
+            background: isHealthy ? "#f0fdf4" : isBlurry ? "#fef3c7" : isUncertain ? "#fefce8" : isUnsupported ? "#fff7ed" : "#fef2f2",
+            border: `1px solid ${isHealthy ? "#bbf7d0" : isBlurry ? "#fde68a" : isUncertain ? "#fef08a" : isUnsupported ? "#fed7aa" : "#fecaca"}`,
+            borderRadius: "10px", padding: "10px 16px", marginBottom: "16px"
+          }}>
+            <span style={{ fontSize: "20px" }}>
+              {isHealthy ? "✅" : isBlurry ? "📷" : isUncertain ? "⚠️" : isUnsupported ? "🚫" : "🔬"}
+            </span>
+            <span style={{ fontWeight: 600, fontSize: "0.92rem", color: isHealthy ? "#166534" : isBlurry ? "#92400e" : isUncertain ? "#854d0e" : isUnsupported ? "#9a3412" : "#991b1b" }}>
+              {prediction.status_label}
+            </span>
+          </div>
+        )}
+
         {/* PRIMARY METRICS CARD */}
         <div className="result-card">
           <div className="result-info-grid">
@@ -855,18 +966,23 @@ function Result() {
             <div className="info-box">
               <span className="info-icon">🦠</span>
               <span className="info-label">{t("diseaseIdentified")}</span>
-              <strong>{displayDisease}</strong>
+              <strong>
+                {isUnknown
+                  ? (isUncertain ? (t("unableToConfidentlyIdentify") || "Unable to identify confidently") : "N/A")
+                  : displayDisease}
+              </strong>
             </div>
 
-            <div className="info-box" title="Model confidence represents the probability/strength assigned to the predicted class among all trained classes. It is not a measurement of disease severity or affected area.">
+            <div className="info-box">
               <span className="info-icon">🎯</span>
               <span className="info-label">{t("confidence")}</span>
               <strong>
-                {prediction.confidence ? `${Number(prediction.confidence).toFixed(2)}%` : "N/A"}
+                {isUnsupported || isBlurry
+                  ? "N/A"
+                  : prediction.confidence
+                  ? `${Number(prediction.confidence).toFixed(2)}%`
+                  : "N/A"}
               </strong>
-              <small style={{ color: "#777", marginTop: "2px", fontSize: "0.75rem" }}>
-                {t("classProbability")}
-              </small>
             </div>
           </div>
 
@@ -1056,25 +1172,66 @@ function Result() {
           </div>
         </div>
 
-        {/* FOR UNSUPPORTED IMAGES: Show dedicated guidance instead of disease info */}
+        {/* FOR UNSUPPORTED / AMBIGUOUS / UNCERTAIN IMAGES: Show dedicated guidance */}
         {isUnknown ? (
-          <div className="result-card" style={{ borderLeft: "4px solid #f59e0b" }}>
-            <div className="section-title">
-              <span>⚠️</span>
-              <h2>{t("unsupportedTitle")}</h2>
+          isBlurry ? (
+            /* BLUR / AMBIGUOUS — photo retake guidance */
+            <div className="result-card" style={{ borderLeft: "4px solid #f59e0b" }}>
+              <div className="section-title">
+                <span>📷</span>
+                <h2>{t("blurTitle")}</h2>
+              </div>
+              <p style={{ lineHeight: 1.6, color: "#4b5563", marginBottom: "12px" }}>
+                {t("blurDesc")}
+              </p>
+              <div style={{ background: "#fffbeb", padding: "14px 18px", borderRadius: "10px", border: "1px solid #fef3c7" }}>
+                <strong style={{ color: "#92400e", display: "block", marginBottom: "6px" }}>{t("guidanceHeading")}</strong>
+                <ul style={{ margin: 0, paddingLeft: "20px", color: "#78350f", lineHeight: 1.6 }}>
+                  <li>{t("blurGuidance1")}</li>
+                  <li>{t("blurGuidance2")}</li>
+                  <li>{t("guidance3")}</li>
+                </ul>
+              </div>
             </div>
-            <p style={{ lineHeight: 1.6, color: "#4b5563", marginBottom: "12px" }}>
-              {t("unsupportedDesc")}
-            </p>
-            <div style={{ background: "#fffbeb", padding: "14px 18px", borderRadius: "10px", border: "1px solid #fef3c7" }}>
-              <strong style={{ color: "#92400e", display: "block", marginBottom: "6px" }}>{t("guidanceHeading")}</strong>
-              <ul style={{ margin: 0, paddingLeft: "20px", color: "#78350f", lineHeight: 1.6 }}>
-                <li>{t("guidance1")}</li>
-                <li>{t("guidance2")}</li>
-                <li>{t("guidance3")}</li>
-              </ul>
+          ) : isUnsupported ? (
+            /* UNSUPPORTED CROP — crop list guidance */
+            <div className="result-card" style={{ borderLeft: "4px solid #f97316" }}>
+              <div className="section-title">
+                <span>🚫</span>
+                <h2>{t("unsupportedTitle")}</h2>
+              </div>
+              <p style={{ lineHeight: 1.6, color: "#4b5563", marginBottom: "12px" }}>
+                {t("unsupportedDesc")}
+              </p>
+              <div style={{ background: "#fff7ed", padding: "14px 18px", borderRadius: "10px", border: "1px solid #fed7aa" }}>
+                <strong style={{ color: "#9a3412", display: "block", marginBottom: "6px" }}>{t("guidanceHeading")}</strong>
+                <ul style={{ margin: 0, paddingLeft: "20px", color: "#7c2d12", lineHeight: 1.6 }}>
+                  <li>{t("guidance1")}</li>
+                  <li>{t("guidance2")}</li>
+                  <li>{t("guidance3")}</li>
+                </ul>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* SUPPORTED CROP WITH UNCERTAIN DIAGNOSIS */
+            <div className="result-card" style={{ borderLeft: "4px solid #eab308" }}>
+              <div className="section-title">
+                <span>⚠️</span>
+                <h2>{t("uncertainTitle")}</h2>
+              </div>
+              <p style={{ lineHeight: 1.6, color: "#4b5563", marginBottom: "12px" }}>
+                {t("uncertainDesc")}
+              </p>
+              <div style={{ background: "#fefce8", padding: "14px 18px", borderRadius: "10px", border: "1px solid #fef08a" }}>
+                <strong style={{ color: "#854d0e", display: "block", marginBottom: "6px" }}>{t("guidanceHeading")}</strong>
+                <ul style={{ margin: 0, paddingLeft: "20px", color: "#713f12", lineHeight: 1.6 }}>
+                  <li>{t("uncertainGuidance1")}</li>
+                  <li>{t("uncertainGuidance2")}</li>
+                  <li>{t("uncertainGuidance3")}</li>
+                </ul>
+              </div>
+            </div>
+          )
         ) : (
           <>
             {/* SYMPTOMS & CLINICAL OBSERVATIONS */}

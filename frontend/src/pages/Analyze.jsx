@@ -43,19 +43,21 @@ function Analyze() {
     return true;
   };
 
-  const setFile = (file) => {
-    if (!validateFile(file)) return;
+  const setFile = (file, existingUrl = null) => {
+    if (!validateFile(file)) return null;
 
     if (selectedImage?.url) {
       URL.revokeObjectURL(selectedImage.url);
     }
 
-    const imageUrl = URL.createObjectURL(file);
-    setSelectedImage({
+    const imageUrl = existingUrl || URL.createObjectURL(file);
+    const item = {
       file,
       url: imageUrl,
-    });
+    };
+    setSelectedImage(item);
     setError("");
+    return item;
   };
 
   const handleUpload = (event) => {
@@ -85,11 +87,50 @@ function Analyze() {
     }
   };
 
-  const handleCameraCapture = (file) => {
-    if (file) {
-      setFile(file);
+  const analyzeFile = async (fileToAnalyze, previewUrl = null) => {
+    if (!fileToAnalyze) {
+      setError("Please upload or capture a crop leaf image first.");
+      return;
     }
+
+    setError("");
+    setIsAnalyzing(true);
+
+    try {
+      const data = await predictCropDisease(fileToAnalyze);
+
+      navigate("/result", {
+        state: {
+          image: previewUrl || selectedImage?.url,
+          fileName: fileToAnalyze.name,
+          prediction: data.result,
+          severity: data.severity,
+          disease_info: data.disease_info,
+          symptoms: data.symptoms,
+        },
+      });
+    } catch (err) {
+      console.error("Prediction error:", err);
+      setError(err.message || "Unable to analyze the image. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleCameraCapture = (payload) => {
     setShowCamera(false);
+    if (!payload) return;
+
+    const file = payload instanceof File ? payload : payload?.file;
+    const url = payload?.url || null;
+    const autoAnalyze = Boolean(payload?.autoAnalyze);
+
+    if (file) {
+      const item = setFile(file, url);
+      if (item && autoAnalyze) {
+        analyzeFile(item.file, item.url);
+      }
+    }
   };
 
   const handleRemove = () => {
@@ -105,34 +146,12 @@ function Analyze() {
     setShowCamera(true);
   };
 
-  const handleAnalyze = async () => {
+  const handleAnalyze = () => {
     if (!selectedImage) {
       setError("Please upload or capture a crop leaf image first.");
       return;
     }
-
-    setError("");
-    setIsAnalyzing(true);
-
-    try {
-      const data = await predictCropDisease(selectedImage.file);
-
-      navigate("/result", {
-        state: {
-          image: selectedImage.url,
-          fileName: selectedImage.file.name,
-          prediction: data.result,
-          severity: data.severity,
-          disease_info: data.disease_info,
-          symptoms: data.symptoms,
-        },
-      });
-    } catch (err) {
-      console.error("Prediction error:", err);
-      setError(err.message || "Unable to analyze the image. Please try again.");
-    } finally {
-      setIsAnalyzing(false);
-    }
+    analyzeFile(selectedImage.file, selectedImage.url);
   };
 
   return (
